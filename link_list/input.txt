@@ -1,0 +1,4 @@
+1 101 Alice 1
+2 102 Bob 0
+3 103 Carol 1
+4 104 David 0
