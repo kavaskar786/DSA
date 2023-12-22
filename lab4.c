@@ -20,12 +20,6 @@ typedef struct {
     Node* rear;
 } PriorityQueue;
 
-// Circular Queue structure
-typedef struct {
-    Node* front;
-    Node* rear;
-} CircularQueue;
-
 // Function to initialize an empty queue
 void initializeQueue(Queue* queue) {
     queue->front = queue->rear = NULL;
@@ -36,11 +30,6 @@ void initializePriorityQueue(PriorityQueue* priorityQueue) {
     priorityQueue->front = priorityQueue->rear = NULL;
 }
 
-// Function to initialize an empty circular queue
-void initializeCircularQueue(CircularQueue* circularQueue) {
-    circularQueue->front = circularQueue->rear = NULL;
-}
-
 // Function to check if the queue is empty
 bool isQueueEmpty(Queue* queue) {
     return (queue->front == NULL);
@@ -49,11 +38,6 @@ bool isQueueEmpty(Queue* queue) {
 // Function to check if the priority queue is empty
 bool isPriorityQueueEmpty(PriorityQueue* priorityQueue) {
     return (priorityQueue->front == NULL);
-}
-
-// Function to check if the circular queue is empty
-bool isCircularQueueEmpty(CircularQueue* circularQueue) {
-    return (circularQueue->front == NULL);
 }
 
 // Function to enqueue a guest in the normal queue
@@ -109,29 +93,6 @@ void enqueuePriority(PriorityQueue* priorityQueue, int guestId) {
     printf("Guest %d has been successfully checked in with priority.\n", guestId);
 }
 
-// Function to enqueue a guest in the circular queue
-void enqueueCircular(CircularQueue* circularQueue, int guestId) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
-    if (newNode == NULL) {
-        printf("Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    newNode->guestId = guestId;
-    newNode->next = NULL;
-
-    if (isCircularQueueEmpty(circularQueue)) {
-        circularQueue->front = circularQueue->rear = newNode;
-        newNode->next = circularQueue->front; // Make it circular
-    } else {
-        newNode->next = circularQueue->front;
-        circularQueue->rear->next = newNode;
-        circularQueue->rear = newNode;
-    }
-
-    printf("Guest %d has been successfully checked in a circular queue.\n", guestId);
-}
-
 // Function to dequeue a guest from the normal queue
 void dequeue(Queue* queue) {
     if (isQueueEmpty(queue)) {
@@ -155,20 +116,6 @@ void dequeuePriority(PriorityQueue* priorityQueue) {
         priorityQueue->front = temp->next;
 
         printf("Guest %d has been checked out from the Priority Queue.\n", temp->guestId);
-
-        free(temp);
-    }
-}
-
-// Function to dequeue a guest from the circular queue
-void dequeueCircular(CircularQueue* circularQueue) {
-    if (isCircularQueueEmpty(circularQueue)) {
-        printf("Circular Queue is empty. No guests to check out.\n");
-    } else {
-        Node* temp = circularQueue->front;
-        circularQueue->front = temp->next;
-
-        printf("Guest %d has been checked out from the Circular Queue.\n", temp->guestId);
 
         free(temp);
     }
@@ -202,20 +149,6 @@ void displayPriorityQueue(PriorityQueue* priorityQueue) {
     }
 }
 
-// Function to display the circular queue
-void displayCircularQueue(CircularQueue* circularQueue) {
-    if (isCircularQueueEmpty(circularQueue)) {
-        printf("Circular Queue is empty.\n");
-    } else {
-        printf("Current Circular Guest Queue:\n");
-        Node* current = circularQueue->front;
-        do {
-            printf("Guest %d\n", current->guestId);
-            current = current->next;
-        } while (current != circularQueue->front);
-    }
-}
-
 int main() {
     // Initialize the queues
     Queue guestQueue;
@@ -223,9 +156,6 @@ int main() {
 
     PriorityQueue priorityQueue;
     initializePriorityQueue(&priorityQueue);
-
-    CircularQueue circularQueue;
-    initializeCircularQueue(&circularQueue);
 
     int choice, guestId, queueType;
 
@@ -249,7 +179,6 @@ int main() {
                 printf("Select the type of queue to check in:\n");
                 printf("1. Normal Queue\n");
                 printf("2. Priority Queue\n");
-                printf("3. Circular Queue\n");
                 printf("Enter your choice: ");
                 scanf("%d", &queueType);
 
@@ -259,9 +188,6 @@ int main() {
                         break;
                     case 2:
                         enqueuePriority(&priorityQueue, guestId);
-                        break;
-                    case 3:
-                        enqueueCircular(&circularQueue, guestId);
                         break;
                     default:
                         printf("Invalid queue type. Please enter a valid option.\n");
@@ -273,7 +199,6 @@ int main() {
                 printf("Select the type of queue to check out from:\n");
                 printf("1. Normal Queue\n");
                 printf("2. Priority Queue\n");
-                printf("3. Circular Queue\n");
                 printf("Enter your choice: ");
                 scanf("%d", &queueType);
 
@@ -283,9 +208,6 @@ int main() {
                         break;
                     case 2:
                         dequeuePriority(&priorityQueue);
-                        break;
-                    case 3:
-                        dequeueCircular(&circularQueue);
                         break;
                     default:
                         printf("Invalid queue type. Please enter a valid option.\n");
@@ -297,7 +219,6 @@ int main() {
                 printf("Select the type of queue to display:\n");
                 printf("1. Normal Queue\n");
                 printf("2. Priority Queue\n");
-                printf("3. Circular Queue\n");
                 printf("Enter your choice: ");
                 scanf("%d", &queueType);
 
@@ -307,9 +228,6 @@ int main() {
                         break;
                     case 2:
                         displayPriorityQueue(&priorityQueue);
-                        break;
-                    case 3:
-                        displayCircularQueue(&circularQueue);
                         break;
                     default:
                         printf("Invalid queue type. Please enter a valid option.\n");
