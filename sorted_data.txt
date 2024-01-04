@@ -1,0 +1,10 @@
+Hotel5 1 147.00
+Hotel6 1 369.00
+Hotel9 1 166.00
+Hotel8 2 382.00
+Hotel7 3 613.00
+Hotel1 4 536.00
+Hotel3 4 582.00
+Hotel4 4 435.00
+Hotel10 4 525.00
+Hotel2 5 1094.00
