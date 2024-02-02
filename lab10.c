@@ -1,202 +1,208 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <string.h>
 
-// Structure to represent an edge in the graph
+// Define maximum number of hotels and infinity value
+#define MAX_HOTELS 100
+#define INF 999999
+
+// Define structure for a hotel
 typedef struct {
-    int source;
-    int destination;
-    int weight;
+    int x, y;      // Coordinates of the hotel
+    char name[50];  // Name of the hotel
+} Hotel;
+
+// Define structure for an edge between two hotels
+typedef struct {
+    int src, dest, weight;  // Source hotel, destination hotel, and distance between them
 } Edge;
 
-// Structure to represent a node in the graph
-typedef struct {
-    int parent;
-    int rank;
-} Subset;
+// Function to display the main menu
+void displayMenu() {
+    printf("\nMenu:\n");
+    printf("1. Display Hotels\n");
+    printf("2. Display Distances between Hotels\n");
+    printf("3. Find Minimum Spanning Tree using Prim's Algorithm\n");
+    printf("4. Find Minimum Spanning Tree using Kruskal's Algorithm\n");
+    printf("5. Exit\n");
+    printf("Enter your choice: ");
+}
 
-// Function declarations
-void generateRandomGraph(Edge *edges, int numEdges, int numVertices);
-void printMST(Edge *mstEdges, int numVertices);
-void primMST(Edge *edges, int numEdges, int numVertices);
-void kruskalMST(Edge *edges, int numEdges, int numVertices);
-int find(Subset *subsets, int i);
-void unionSets(Subset *subsets, int x, int y);
+// Function to read hotel information from a file
+void readHotelsFromFile(char *filename, Hotel hotels[], int *numHotels) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file: %s\n", filename);
+        exit(1);
+    }
 
-// Function to generate random input for the graph
-void generateRandomGraph(Edge *edges, int numEdges, int numVertices) {
-    for (int i = 0; i < numEdges; ++i) {
-        edges[i].source = rand() % numVertices;
-        edges[i].destination = rand() % numVertices;
-        edges[i].weight = rand() % 100 + 1; // Random weight between 1 and 100
+    *numHotels = 0;
+    while (fscanf(file, "%s %d %d", hotels[*numHotels].name, &hotels[*numHotels].x, &hotels[*numHotels].y) != EOF) {
+        (*numHotels)++;
+    }
+
+    fclose(file);
+}
+
+// Function to read edge information from a file
+void readEdgesFromFile(char *filename, Edge edges[], int *numEdges) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file: %s\n", filename);
+        exit(1);
+    }
+
+    *numEdges = 0;
+    while (fscanf(file, "%d %d %d", &edges[*numEdges].src, &edges[*numEdges].dest, &edges[*numEdges].weight) != EOF) {
+        (*numEdges)++;
+    }
+
+    fclose(file);
+}
+
+// Function to display information about hotels
+void displayHotels(Hotel hotels[], int numHotels) {
+    printf("\nList of Hotels:\n");
+    for (int i = 0; i < numHotels; i++) {
+        printf("%s - Coordinates: (%d, %d)\n", hotels[i].name, hotels[i].x, hotels[i].y);
     }
 }
 
-// Function to print the edges in the MST
-void printMST(Edge *mstEdges, int numVertices) {
-    printf("Edges in Minimum Spanning Tree:\n");
-    for (int i = 0; i < numVertices - 1; ++i) {
-        printf("(%d, %d) - %d\n", mstEdges[i].source, mstEdges[i].destination, mstEdges[i].weight);
+// Function to display information about edges (distances) between hotels
+void displayEdges(Hotel hotels[], Edge edges[], int numEdges) {
+    printf("\nDistances between Hotels:\n");
+    for (int i = 0; i < numEdges; i++) {
+        printf("%s to %s: %d\n", hotels[edges[i].src].name, hotels[edges[i].dest].name, edges[i].weight);
     }
 }
 
-// Prim's algorithm to find Minimum Spanning Tree
-void primMST(Edge *edges, int numEdges, int numVertices) {
-    Edge *mstEdges = (Edge *)malloc((numVertices - 1) * sizeof(Edge));
-    int *key = (int *)malloc(numVertices * sizeof(int));
-    bool *inMST = (bool *)malloc(numVertices * sizeof(bool));
+// Function to find the parent of a set in Union-Find data structure
+int findParent(int parent[], int i) {
+    if (parent[i] == -1)
+        return i;
+    return findParent(parent, parent[i]);
+}
 
-    for (int i = 0; i < numVertices; ++i) {
-        key[i] = INT_MAX;
-        inMST[i] = false;
+// Function to perform union operation in Union-Find data structure
+void unionSets(int parent[], int x, int y) {
+    int rootX = findParent(parent, x);
+    int rootY = findParent(parent, y);
+    parent[rootX] = rootY;
+}
+
+// Function to find Minimum Spanning Tree using Prim's Algorithm
+void primMST(Hotel hotels[], Edge edges[], int numHotels, int numEdges) {
+    int parent[MAX_HOTELS];
+    int key[MAX_HOTELS];
+    int inMST[MAX_HOTELS];
+
+    // Initialize arrays
+    for (int i = 0; i < numHotels; i++) {
+        key[i] = INF;
+        inMST[i] = 0;
+        parent[i] = -1;
     }
 
+    // Start with the first hotel
     key[0] = 0;
 
-    for (int count = 0; count < numVertices - 1; ++count) {
+    // Iterate over all hotels
+    for (int count = 0; count < numHotels - 1; count++) {
         int u = -1;
 
-        for (int v = 0; v < numVertices; ++v) {
+        // Find the hotel with the minimum key value
+        for (int v = 0; v < numHotels; v++) {
             if (!inMST[v] && (u == -1 || key[v] < key[u])) {
                 u = v;
             }
         }
 
-        inMST[u] = true;
+        // Include the selected hotel in the MST
+        inMST[u] = 1;
 
-        for (int v = 0; v < numVertices; ++v) {
-            if (!inMST[v] && edges[u * numVertices + v].weight < key[v]) {
-                key[v] = edges[u * numVertices + v].weight;
-                mstEdges[count] = edges[u * numVertices + v];
+        // Update key values of the adjacent hotels
+        for (int v = 0; v < numHotels; v++) {
+            if (edges[v].src == u && !inMST[edges[v].dest] && edges[v].weight < key[edges[v].dest]) {
+                parent[edges[v].dest] = u;
+                key[edges[v].dest] = edges[v].weight;
             }
         }
     }
 
-    printMST(mstEdges, numVertices);
-
-    free(mstEdges);
-    free(key);
-    free(inMST);
+    // Display the Minimum Spanning Tree
+    printf("\nMinimum Spanning Tree using Prim's Algorithm:\n");
+    for (int i = 1; i < numHotels; i++) {
+        printf("%s to %s: %d\n", hotels[parent[i]].name, hotels[i].name, key[i]);
+    }
 }
 
-// Kruskal's algorithm to find Minimum Spanning Tree
-void kruskalMST(Edge *edges, int numEdges, int numVertices) {
-    Edge *mstEdges = (Edge *)malloc((numVertices - 1) * sizeof(Edge));
-    Subset *subsets = (Subset *)malloc(numVertices * sizeof(Subset));
+// Function to compare edges for sorting in Kruskal's Algorithm
+int compareEdges(const void *a, const void *b) {
+    return ((Edge *)a)->weight - ((Edge *)b)->weight;
+}
 
-    // Initialize subsets
-    for (int i = 0; i < numVertices; ++i) {
-        subsets[i].parent = i;
-        subsets[i].rank = 0;
+// Function to find Minimum Spanning Tree using Kruskal's Algorithm
+void kruskalMST(Hotel hotels[], Edge edges[], int numHotels, int numEdges) {
+    // Sort edges based on weight
+    qsort(edges, numEdges, sizeof(Edge), compareEdges);
+
+    // Initialize Union-Find data structure
+    int parent[MAX_HOTELS];
+    for (int i = 0; i < numHotels; i++) {
+        parent[i] = -1;
     }
 
-    // Sort edges in ascending order of weight
-    for (int i = 0; i < numEdges - 1; ++i) {
-        for (int j = 0; j < numEdges - i - 1; ++j) {
-            if (edges[j].weight > edges[j + 1].weight) {
-                Edge temp = edges[j];
-                edges[j] = edges[j + 1];
-                edges[j + 1] = temp;
-            }
+    // Display the Minimum Spanning Tree
+    printf("\nMinimum Spanning Tree using Kruskal's Algorithm:\n");
+    for (int i = 0; i < numEdges; i++) {
+        int rootX = findParent(parent, edges[i].src);
+        int rootY = findParent(parent, edges[i].dest);
+
+        // Include the edge in the MST if it doesn't create a cycle
+        if (rootX != rootY) {
+            printf("%s to %s: %d\n", hotels[edges[i].src].name, hotels[edges[i].dest].name, edges[i].weight);
+            unionSets(parent, rootX, rootY);
         }
     }
-
-    int count = 0;
-    int i = 0;
-
-    // Construct MST
-    while (count < numVertices - 1 && i < numEdges) {
-        Edge nextEdge = edges[i++];
-
-        int x = nextEdge.source;
-        int y = nextEdge.destination;
-
-        int xRoot = find(subsets, x);
-        int yRoot = find(subsets, y);
-
-        if (xRoot != yRoot) {
-            mstEdges[count++] = nextEdge;
-            unionSets(subsets, xRoot, yRoot);
-        }
-    }
-
-    printMST(mstEdges, numVertices);
-
-    free(mstEdges);
-    free(subsets);
 }
 
-// Helper function to find the subset of a given element
-int find(Subset *subsets, int i) {
-    if (subsets[i].parent != i) {
-        subsets[i].parent = find(subsets, subsets[i].parent);
-    }
-    return subsets[i].parent;
-}
-
-// Helper function to perform union of two sets
-void unionSets(Subset *subsets, int x, int y) {
-    int xRoot = find(subsets, x);
-    int yRoot = find(subsets, y);
-
-    if (subsets[xRoot].rank < subsets[yRoot].rank) {
-        subsets[xRoot].parent = yRoot;
-    } else if (subsets[xRoot].rank > subsets[yRoot].rank) {
-        subsets[yRoot].parent = xRoot;
-    } else {
-        subsets[yRoot].parent = xRoot;
-        subsets[xRoot].rank++;
-    }
-}
-
+// Main function
 int main() {
-    int numVertices, numEdges;
+    Hotel hotels[MAX_HOTELS];
+    Edge edges[MAX_HOTELS * (MAX_HOTELS - 1) / 2];  // Maximum edges in a complete graph
 
-    // Get input from the user
-    printf("Enter the number of vertices in the hotel: ");
-    scanf("%d", &numVertices);
+    int numHotels, numEdges, choice;
 
-    // Ensure the number of vertices is at least 2
-    if (numVertices < 2) {
-        printf("Invalid number of vertices. The hotel must have at least 2 rooms.\n");
-        return 1;
-    }
+    // Read hotels and edges from files
+    readHotelsFromFile("hotels.txt", hotels, &numHotels);
+    readEdgesFromFile("distances.txt", edges, &numEdges);
 
-    numEdges = numVertices * (numVertices - 1) / 2; // Complete graph
-
-    Edge *edges = (Edge *)malloc(numEdges * sizeof(Edge));
-
-    // Generate random input for the graph
-    generateRandomGraph(edges, numEdges, numVertices);
-
-    int choice;
-
+    // Menu-driven program loop
     do {
-        // Display menu
-        printf("\nMenu:\n");
-        printf("1. Find Minimum Spanning Tree using Prim's Algorithm\n");
-        printf("2. Find Minimum Spanning Tree using Kruskal's Algorithm\n");
-        printf("3. Exit\n");
-        printf("Enter your choice: ");
+        displayMenu();
         scanf("%d", &choice);
 
         switch (choice) {
             case 1:
-                primMST(edges, numEdges, numVertices);
+                displayHotels(hotels, numHotels);
                 break;
             case 2:
-                kruskalMST(edges, numEdges, numVertices);
+                displayEdges(hotels, edges, numEdges);
                 break;
             case 3:
-                printf("Exiting the program.\n");
+                primMST(hotels, edges, numHotels, numEdges);
+                break;
+            case 4:
+                kruskalMST(hotels, edges, numHotels, numEdges);
+                break;
+            case 5:
+                printf("Exiting program.\n");
                 break;
             default:
                 printf("Invalid choice. Please enter a valid option.\n");
         }
 
-    } while (choice != 3);
-
-    free(edges);
+    } while (choice != 5);
 
     return 0;
 }

@@ -2,29 +2,29 @@
 #include <stdlib.h>
 #include <time.h>
 
-// Structure to represent a hotel room
-typedef struct Room {
-    int roomNumber;
-    // Add other room details as needed
-    struct Room *left;
-    struct Room *right;
-} Room;
+// Structure to represent a restaurant table
+typedef struct Table {
+    int tableNumber;
+    // Add other table details as needed
+    struct Table *left;
+    struct Table *right;
+} Table;
 
 // Function prototypes
-Room *insert(Room *root, int roomNumber);
-Room *deleteRoom(Room *root, int roomNumber);
-Room *search(Room *root, int roomNumber);
-int getHeight(Room *root);
-void inorderTraversal(Room *root);
-void preorderTraversal(Room *root);
-void postorderTraversal(Room *root);
+Table *insert(Table *root, int tableNumber);
+Table *deleteTable(Table *root, int tableNumber);
+Table *search(Table *root, int tableNumber);
+int getHeight(Table *root);
+void inorderTraversal(Table *root);
+void preorderTraversal(Table *root);
+void postorderTraversal(Table *root);
 void displayMenu();
 
 int main() {
-    Room *root = NULL;
+    Table *root = NULL;
     srand(time(NULL)); // Seed for random number generation
 
-    int choice, roomNumber;
+    int choice, tableNumber;
     do {
         displayMenu();
         printf("Enter your choice: ");
@@ -32,28 +32,28 @@ int main() {
 
         switch (choice) {
             case 1:
-                // Insert a room
-                printf("Enter room number to insert: ");
-                scanf("%d", &roomNumber);
-                root = insert(root, roomNumber);
+                // Insert a table
+                printf("Enter table number to insert: ");
+                scanf("%d", &tableNumber);
+                root = insert(root, tableNumber);
                 break;
 
             case 2:
-                // Delete a room
-                printf("Enter room number to delete: ");
-                scanf("%d", &roomNumber);
-                root = deleteRoom(root, roomNumber);
+                // Delete a table
+                printf("Enter table number to delete: ");
+                scanf("%d", &tableNumber);
+                root = deleteTable(root, tableNumber);
                 break;
 
             case 3:
-                // Search for a room
-                printf("Enter room number to search: ");
-                scanf("%d", &roomNumber);
-                Room *result = search(root, roomNumber);
+                // Search for a table
+                printf("Enter table number to search: ");
+                scanf("%d", &tableNumber);
+                Table *result = search(root, tableNumber);
                 if (result != NULL) {
-                    printf("Room %d found!\n", roomNumber);
+                    printf("Table %d found!\n", tableNumber);
                 } else {
-                    printf("Room %d not found!\n", roomNumber);
+                    printf("Table %d not found!\n", tableNumber);
                 }
                 break;
 
@@ -97,77 +97,77 @@ int main() {
     return 0;
 }
 
-// Function to insert a room into the BST
-Room *insert(Room *root, int roomNumber) {
+// Function to insert a table into the BST
+Table *insert(Table *root, int tableNumber) {
     if (root == NULL) {
-        Room *newRoom = (Room *)malloc(sizeof(Room));
-        newRoom->roomNumber = roomNumber;
-        newRoom->left = newRoom->right = NULL;
-        return newRoom;
+        Table *newTable = (Table *)malloc(sizeof(Table));
+        newTable->tableNumber = tableNumber;
+        newTable->left = newTable->right = NULL;
+        return newTable;
     }
 
-    if (roomNumber < root->roomNumber) {
-        root->left = insert(root->left, roomNumber);
-    } else if (roomNumber > root->roomNumber) {
-        root->right = insert(root->right, roomNumber);
+    if (tableNumber < root->tableNumber) {
+        root->left = insert(root->left, tableNumber);
+    } else if (tableNumber > root->tableNumber) {
+        root->right = insert(root->right, tableNumber);
     }
 
     return root;
 }
 
-// Function to delete a room from the BST
-Room *deleteRoom(Room *root, int roomNumber) {
+// Function to delete a table from the BST
+Table *deleteTable(Table *root, int tableNumber) {
     if (root == NULL) {
         return root;
     }
 
-    if (roomNumber < root->roomNumber) {
-        root->left = deleteRoom(root->left, roomNumber);
-    } else if (roomNumber > root->roomNumber) {
-        root->right = deleteRoom(root->right, roomNumber);
+    if (tableNumber < root->tableNumber) {
+        root->left = deleteTable(root->left, tableNumber);
+    } else if (tableNumber > root->tableNumber) {
+        root->right = deleteTable(root->right, tableNumber);
     } else {
-        // Room found, perform deletion
+        // Table found, perform deletion
         if (root->left == NULL) {
-            Room *temp = root->right;
+            Table *temp = root->right;
             free(root);
             return temp;
         } else if (root->right == NULL) {
-            Room *temp = root->left;
+            Table *temp = root->left;
             free(root);
             return temp;
         }
 
-        // Room with two children, find the inorder successor
-        Room *temp = root->right;
+        // Table with two children, find the inorder successor
+        Table *temp = root->right;
         while (temp->left != NULL) {
             temp = temp->left;
         }
 
         // Copy the inorder successor's data to this node
-        root->roomNumber = temp->roomNumber;
+        root->tableNumber = temp->tableNumber;
 
         // Delete the inorder successor
-        root->right = deleteRoom(root->right, temp->roomNumber);
+        root->right = deleteTable(root->right, temp->tableNumber);
     }
 
     return root;
 }
 
-// Function to search for a room in the BST
-Room *search(Room *root, int roomNumber) {
-    if (root == NULL || root->roomNumber == roomNumber) {
+// Function to search for a table in the BST
+Table *search(Table *root, int tableNumber) {
+    if (root == NULL || root->tableNumber == tableNumber) {
         return root;
     }
 
-    if (roomNumber < root->roomNumber) {
-        return search(root->left, roomNumber);
+    if (tableNumber < root->tableNumber) {
+        return search(root->left, tableNumber);
     }
 
-    return search(root->right, roomNumber);
+    return search(root->right, tableNumber);
 }
 
 // Function to calculate the height of the BST
-int getHeight(Room *root) {
+int getHeight(Table *root) {
     if (root == NULL) {
         return 0;
     }
@@ -179,38 +179,38 @@ int getHeight(Room *root) {
 }
 
 // Function for inorder traversal of the BST
-void inorderTraversal(Room *root) {
+void inorderTraversal(Table *root) {
     if (root != NULL) {
         inorderTraversal(root->left);
-        printf("%d ", root->roomNumber);
+        printf("%d ", root->tableNumber);
         inorderTraversal(root->right);
     }
 }
 
 // Function for preorder traversal of the BST
-void preorderTraversal(Room *root) {
+void preorderTraversal(Table *root) {
     if (root != NULL) {
-        printf("%d ", root->roomNumber);
+        printf("%d ", root->tableNumber);
         preorderTraversal(root->left);
         preorderTraversal(root->right);
     }
 }
 
 // Function for postorder traversal of the BST
-void postorderTraversal(Room *root) {
+void postorderTraversal(Table *root) {
     if (root != NULL) {
         postorderTraversal(root->left);
         postorderTraversal(root->right);
-        printf("%d ", root->roomNumber);
+        printf("%d ", root->tableNumber);
     }
 }
 
 // Function to display menu
 void displayMenu() {
-    printf("\n===== Hotel Management System Menu =====\n");
-    printf("1. Insert a Room\n");
-    printf("2. Delete a Room\n");
-    printf("3. Search for a Room\n");
+    printf("\n===== Restaurant Management System Menu =====\n");
+    printf("1. Insert a Table\n");
+    printf("2. Delete a Table\n");
+    printf("3. Search for a Table\n");
     printf("4. Calculate Height of BST\n");
     printf("5. Inorder Traversal\n");
     printf("6. Preorder Traversal\n");

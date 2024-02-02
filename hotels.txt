@@ -1,0 +1,4 @@
+HotelA 10 20
+HotelB 30 40
+HotelC 50 60
+HotelD 70 80
